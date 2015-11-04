@@ -72,9 +72,12 @@ class LaravelAnalyticsServiceProvider extends ServiceProvider
      */
     protected function getGoogleClient()
     {
+
+        $json_data =  json_decode(file_get_contents(Config::get('laravel-analytics.certificatePath')));
+
         $client = new Google_Client(
             [
-                'oauth2_client_id' => Config::get('laravel-analytics.clientId'),
+                'oauth2_client_id' => $json_data->client_id,
                 'use_objects' => true,
             ]
         );
@@ -84,10 +87,9 @@ class LaravelAnalyticsServiceProvider extends ServiceProvider
         $client->setAccessType('offline');
 
         $client->setAssertionCredentials(
-            new \Google_Auth_AssertionCredentials(
-                Config::get('laravel-analytics.serviceEmail'),
-                ['https://www.googleapis.com/auth/analytics.readonly'],
-                file_get_contents(Config::get('laravel-analytics.certificatePath'))
+            $client->loadServiceAccountJson(
+                Config::get('laravel-analytics.certificatePath'),
+                ['https://www.googleapis.com/auth/analytics.readonly']
             )
         );
 
